@@ -6,4 +6,9 @@ pur_beurre_project/staticfiles/
 geckodriver.log
 .cache/
 .pytest_cache
+htmlcov/
 .coverage
+.coveragerc
+.coverage.*
+coverage.xml
+*.cover
