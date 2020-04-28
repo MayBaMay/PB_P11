@@ -91,6 +91,51 @@ class RegisterPageTestCase(StaticLiveServerTestCase):
         self.assertEqual(User.objects.filter(username="Test").count(), 1)
         self.assertEqual(User.objects.get(username="Test").is_authenticated, True)
 
+class RegisterClientTestCase(TransactionTestCase):
+
+    def setUp(self):
+        """setup tests"""
+        self.user1 = User.objects.create_user(
+        'registerTestUser', 'test@test.com', 'testpassword')
+
+    def test_register_succes(self):
+        data = {'username':'NewUserTest', 'email':'testnewUser@test.com','password1':'t3stpassword','password2':'t3stpassword'}
+        response = self.client.post(reverse('foodSearch:register'),
+                                    data=data,
+                                    HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(User.objects.filter(username='NewUserTest').exists(), True)
+        self.assertEqual(User.objects.get(username='NewUserTest').is_authenticated, True)
+        self.client.logout()
+
+    def test_register_fails_password_not_confrimed(self):
+        data = {'username':'NewUserTest', 'email':'testnewUser@test.com','password1':'t3stpassword','password2':'testpassword'}
+        response = self.client.post(reverse('foodSearch:register'),
+                                    data=data,
+                                    HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(User.objects.filter(username='NewUserTest').exists(), False)
+
+    def test_register_fails_password_too_short(self):
+        data = {'username':'NewUserTest', 'email':'testnewUser@test.com','password1':'test','password2':'test'}
+        response = self.client.post(reverse('foodSearch:register'),
+                                    data=data,
+                                    HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(User.objects.filter(username='NewUserTest').exists(), False)
+
+    def test_register_fails_username_already_in_DB(self):
+        data = {'username':'registerTestUser', 'email':'registerTestUser@test.com','password1':'t3stpassword','password2':'t3stpassword'}
+        response = self.client.post(reverse('foodSearch:register'),
+                                    data=data,
+                                    HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(User.objects.filter(username='registerTestUser').exists(), True)
+        self.assertEqual(User.objects.filter(email='registerTestUser@test.com').exists(), False)
+
+    def test_register_fails_email_already_in_DB(self):
+        data = {'username':'brandnewuser', 'email':'test@test.com','password1':'t3stpassword','password2':'t3stpassword'}
+        response = self.client.post(reverse('foodSearch:register'),
+                                    data=data,
+                                    HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(User.objects.filter(username='brandnewuser').exists(), False)
+
 
 class ProceedResearchTestCase(TestCase):
     """
