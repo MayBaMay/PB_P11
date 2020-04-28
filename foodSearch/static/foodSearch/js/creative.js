@@ -105,6 +105,7 @@ $.ajaxSetup({
     let submitBtn = $(this).find('input[type=submit]');
     $('.no-user-error').css('display', 'none');
     $('.password-error').css('display', 'none');
+    $('.login-error').css('display', 'none');
     e.preventDefault();
     $.ajax({
       url: "/login/", // the file to call
@@ -117,16 +118,31 @@ $.ajaxSetup({
           document.location.reload(true);
           $('#modalLogIn').modal('hide');
         }
-        else if (login_response.user == "password wrong") {
+        else if (login_response.user == "wrong_password") {
           $('.password-error').css('display', 'block');
           submitBtn.prop('disabled', false);
           hideLoader();
            }
-        else{
+        else if (login_response.user == "user_unknown"){
           $('.no-user-error').css('display', 'block');
           document.getElementById(formId).reset();
           hideLoader();
-        }
+          }
+          else if (login_response.user == "error"){
+            $('.login-error').css('display', 'block');
+            document.getElementById(formId).reset();
+            hideLoader();
+            }
+          else if (login_response.user == "error-user-none"){
+            $('.user-none-error').css('display', 'block');
+            document.getElementById(formId).reset();
+            hideLoader();
+            }
+          else{
+            ('.bug-error').css('display', 'block');
+            document.getElementById(formId).reset();
+            hideLoader();
+          }
       }
     })
   });
@@ -146,7 +162,10 @@ $.ajaxSetup({
   $('#registerForm').submit(function(e){
     let formId = $(this).attr('id');
     let submitBtn = $(this).find('input[type=submit]');
-    $('#username-error').css('display', 'none');
+    $('.username-error').css('display', 'none');
+    $('.d-pwd-error').css('display', 'none');
+    $('.invalid-pwd-error').css('display', 'none');
+    $('.email-error').css('display', 'none');
     e.preventDefault();
     $.ajax({
       url: "/register/", // the file to call
@@ -161,11 +180,20 @@ $.ajaxSetup({
           initLoader();
         }
         else if (register_response.user == "already in DB") {
-          $('#username-error').css('display', 'block');
+          $('.username-error').css('display', 'block');
           submitBtn.prop('disabled', false);
            }
-        else{
-          $('.no-user-error').css('display', 'block');
+        else if (register_response.user == "diff_passwords") {
+          $('.d-pwd-error').css('display', 'block');
+          submitBtn.prop('disabled', false);
+          }
+        else if (register_response.user == "invalid_password") {
+          $('.invalid-pwd-error').css('display', 'block');
+          submitBtn.prop('disabled', false);
+          }
+        else if (register_response.user == "email already in DB") {
+          $('.email-error').css('display', 'block');
+          submitBtn.prop('disabled', false);
         }
       }
     })

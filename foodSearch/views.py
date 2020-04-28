@@ -7,9 +7,9 @@ foodSearch views
 from django.shortcuts import render
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.core.paginator import Paginator
-from django.http import HttpResponse
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse, Http404
 
 from .models import Category, Favorite, Product
 from .query_parser import QueryParser
@@ -30,34 +30,61 @@ def legals(request):
 def register_view(request):
     """Registration view creating a user and returning json response to ajax"""
     response_data = {}
-    username = request.POST['username']
-    email = request.POST['email']
-    password = request.POST['password']
-    try:
-        user = User.objects.get(username=username)
-        response_data = {'user':"already in DB"}
-    except User.DoesNotExist:
-        user = User.objects.create(username=username, email=email, password=password)
-        user.save()
-        login(request, user)
-        response_data = {'user':"success"}
-    return HttpResponse(JsonResponse(response_data))
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            email = request.POST['email']
+            if User.objects.filter(email=email).exists():
+                response_data = {'user':"email already in DB"}
+            else:
+                form.save()
+                username = form.cleaned_data.get('username')
+                raw_password = form.cleaned_data.get('password1')
+                user = authenticate(username=username, password=raw_password)
+                login(request, user)
+                response_data = {'user':"success"}
+        else:
+            username = request.POST['username']
+            password1 = request.POST['password1']
+            password2 = request.POST['password2']
+            if password1 != password2:
+                response_data = {'user':"diff_passwords"}
+            else:
+                try:
+                    user = User.objects.get(username=username)
+                    response_data = {'user':"already in DB"}
+                except User.DoesNotExist:
+                    response_data = {'user':"invalid_password"}
+        return HttpResponse(JsonResponse(response_data))
+    raise Http404()
 
 def login_view(request):
     """Login view returning json response to ajax"""
     response_data = {}
-    username = request.POST['username']
-    password = request.POST['password']
-    try:
-        user = User.objects.get(username=username)
-        if user.password == password:
-            login(request, user)
-            response_data = {'user':"success"}
+    if request.method == 'POST':
+        form = AuthenticationForm(request=request, data=request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                login(request, user)
+                response_data = {'user':"success"}
+            else:
+                response_data = {'user':"error-user-none"}
         else:
-            response_data = {'user':"password wrong"}
-    except User.DoesNotExist:
-        response_data = {'user':"user unknown"}
-    return HttpResponse(JsonResponse(response_data))
+            rusername = request.POST['username']
+            password = request.POST['password']
+            try:
+                user = User.objects.get(username=username)
+                if user.password != password:
+                    response_data = {'user':"wrong_password"}
+                else:
+                    response_data = {'user':"error"}
+            except User.DoesNotExist:
+                response_data = {'user':"user_unknown"}
+        return HttpResponse(JsonResponse(response_data))
+    raise Http404()
 
 def userpage(request):
     """View rendering userpage"""

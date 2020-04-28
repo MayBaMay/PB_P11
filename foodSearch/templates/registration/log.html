@@ -23,6 +23,9 @@
               </div>
 
               <p class="text-danger text-center password-error" style="display:none;">Mot de passe incorrect</p>
+              <p class="text-danger text-center login-error" style="display:none;">Erreur</p>
+              <p class="text-danger text-center bug-error" style="display:none;">BUG</p>
+              <p class="text-danger text-center user-none-error" style="display:none;">BUG</p>
 
               <input type="hidden" name="last_url" value="{{ request.get_full_path }}" />
 
@@ -76,7 +79,7 @@
             <input type="text" name="username" id="signUp-username" class="form-control"
              placeholder="Nom d'utilisateur" required="required"/>
           </div>
-          <div class="text-danger text-center" id="username-error" style="display:none;">
+          <div class="text-danger text-center username-error" id="" style="display:none;">
             <p>Un utilisateur existe déjà à ce nom</p>
             <a class="connection" data-toggle="modal" data-target="#modalLogIn">Se connecter</a>
           </div>
@@ -84,10 +87,20 @@
             <input type="email" name="email" id="signUp-email" class="form-control"
              placeholder="Email" required="required" />
           </div>
+          <p class="text-danger text-center email-error" style="display:none;">Un compte est déjà créé avec cette adresse email</p>
+          <div class="">
+            <ul>
+              <li>Votre mot de passe ne peut pas trop ressembler à vos autres informations personnelles.</li>
+              <li>Votre mot de passe doit contenir au minimum 8 caractères.</li>
+              <li>Votre mot de passe ne peut pas être un mot de passe couramment utilisé.</li>
+              <li>Votre mot de passe ne peut pas être entièrement numérique.</li>
+            </ul>
+          </div>
           <div class="form-group">
             <input type="password" name="password" id="signUp-password" class="form-control"
              placeholder="Mot de passe" required="required" />
           </div>
+          <p class="text-danger text-center invalid-pwd-error" style="display:none;">Mot de passe incorrect</p>
           <button id="signUp-btn" type="submit" class="btn btn-secondary mt-3">Créer mon compte</button>
           </form>
       </div>
