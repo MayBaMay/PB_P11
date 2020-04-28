@@ -7,13 +7,14 @@ foodSearch views
 from django.shortcuts import render
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.contrib.auth.forms import AuthenticationForm
 from django.core.paginator import Paginator
 from django.http import HttpResponse, JsonResponse, Http404
 
 from .models import Category, Favorite, Product
 from .query_parser import QueryParser
 from .results_parser import ResultsParser
+from .forms import UserCreationFormWithMail
 
 
 def index(request):
@@ -31,7 +32,7 @@ def register_view(request):
     """Registration view creating a user and returning json response to ajax"""
     response_data = {}
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = UserCreationFormWithMail(request.POST)
         if form.is_valid():
             email = request.POST['email']
             if User.objects.filter(email=email).exists():
