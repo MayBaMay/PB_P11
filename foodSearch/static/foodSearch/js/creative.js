@@ -106,6 +106,7 @@ $.ajaxSetup({
     $('.no-user-error').css('display', 'none');
     $('.password-error').css('display', 'none');
     $('.login-error').css('display', 'none');
+    $('.user-none-error').css('display', 'none');
     e.preventDefault();
     $.ajax({
       url: "/login/", // the file to call

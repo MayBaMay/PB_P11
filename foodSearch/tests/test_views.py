@@ -48,6 +48,11 @@ class RegisterPageTestCase(StaticLiveServerTestCase):
         cls.selenium.quit()
         super().tearDownClass()
 
+    def setUp(self):
+        user = User.objects.create(username='johnDo', email='test@test.com', is_active=True)
+        user.set_password('mot2passe5ecret')
+        user.save()
+
     def test_register(self):
         """tests on register view"""
         self.selenium.get('%s%s' % (self.live_server_url, '/'))
@@ -62,10 +67,10 @@ class RegisterPageTestCase(StaticLiveServerTestCase):
         username_input.send_keys('usertest')
         email_input = self.selenium.find_element_by_css_selector("#signUp-email")
         email_input.send_keys('usertest@test.com')
-        password_input = self.selenium.find_element_by_css_selector("#signUp-password1")
-        password_input.send_keys('mot2passe5ecret')
-        password_input = self.selenium.find_element_by_css_selector("#signUp-password2")
-        password_input.send_keys('mot2passe5ecret')
+        password1_input = self.selenium.find_element_by_css_selector("#signUp-password1")
+        password1_input.send_keys('mot2passe5ecret')
+        password2_input = self.selenium.find_element_by_css_selector("#signUp-password2")
+        password2_input.send_keys('mot2passe5ecret')
         self.selenium.find_element_by_css_selector("#signUp-btn").click()
 
         self.assertEqual(User.objects.filter(username="usertest").exists(), True)
@@ -74,26 +79,23 @@ class RegisterPageTestCase(StaticLiveServerTestCase):
 
     def test_login(self):
         """tests on login view"""
-        User.objects.create(username="Test",
-                            email="userinDB@test.com",
-                            password="mot2passe5ecret")
         self.selenium.get('%s%s' % (self.live_server_url, '/'))
         self.selenium.find_element_by_css_selector("#connect").click()
         signin_modal = self.selenium.find_element_by_css_selector("#modalLogIn")
         self.assertTrue(signin_modal.is_displayed())
         username_input = self.selenium.find_element_by_css_selector("#login-username")
-        username_input.send_keys('Test')
+        username_input.send_keys('johnDo')
         password_input = self.selenium.find_element_by_css_selector("#login-password")
         password_input.send_keys('mot2passe5ecret')
-        self.selenium.find_element_by_css_selector("#signin-Submit").click()
+        self.selenium.find_element_by_css_selector("#signin-btn").click()
 
-        self.assertEqual(User.objects.filter(username="Test").exists(), True)
-        self.assertEqual(User.objects.filter(username="Test").count(), 1)
-        self.assertEqual(User.objects.get(username="Test").is_authenticated, True)
+        self.assertEqual(User.objects.filter(username="johnDo").exists(), True)
+        self.assertEqual(User.objects.filter(username="johnDo").count(), 1)
+        self.assertEqual(User.objects.get(username="johnDo").is_authenticated, True)
 
 class RegisterClientTestCase(TransactionTestCase):
     """
-    Tests on register view 
+    Tests on register view
     """
 
     def setUp(self):
@@ -294,10 +296,10 @@ class UserProfileTestCase(TransactionTestCase):
             'new_password1': 'mynewpassword',
             'new_password2': 'newpassword',
             }
-       response = self.client.post(reverse('foodSearch:userpage'), data)
-       self.assertEquals(User.objects.get(username="Test").check_password("mynewpassword"), False)
-       self.assertEquals(User.objects.get(username="Test").check_password("testpassword"), True)
-       self.client.logout()
+        response = self.client.post(reverse('foodSearch:userpage'), data)
+        self.assertEquals(User.objects.get(username="Test").check_password("mynewpassword"), False)
+        self.assertEquals(User.objects.get(username="Test").check_password("testpassword"), True)
+        self.client.logout()
 
     def test_userpage_post_change_password_fail_too_short(self):
         """test userpage view in post method"""
