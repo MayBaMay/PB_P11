@@ -7,7 +7,7 @@
   <div class="container h-100">
     <div class="row h-100 align-items-center justify-content-center text-center">
       <div class="col-lg-10 align-self-end">
-        <h1 class="text-uppercase text-white font-weight-bold">Ahoy<br>{{title}} !</h1>
+        <h1 class="text-uppercase text-white font-weight-bold">Ahoy<br>{{user.username}} !</h1>
       </div>
     </div>
   </div>
@@ -23,6 +23,24 @@
       <p>Adresse mail : {{ user.email }} <a href="#" id="newemail"title="Modfier" data-toggle="modal" data-target="#modal_change_email" ><i class="fas fa-edit"></i></a></p>
     </b>
    </div>
+
+   <div class="container" id="pwdform">
+      <p><b>Modification du mot de passe</b></p>
+      <form class="" method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        {% for field in form %}
+          {% for error in field.errors %}
+            <p style="color: red">{{ error }}</p>
+          {% endfor %}
+        {% endfor %}
+        <button type="submit">Valider</button>
+      </form>
+      {% if success %}
+        <p class="text-center pt-3" style="color: #345A61;">Votre mot de passe a bien été modifié</p>
+      {% endif %}
+    </div>
+
     <div class="row justify-content-center mt-3">
         <a class="btn btn-secondary" href="javascript:history.go(-1)" role="button">Retour</a>
     </div>

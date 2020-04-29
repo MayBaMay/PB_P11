@@ -4,10 +4,10 @@
 foodSearch views
 """
 
-from django.shortcuts import render
-from django.contrib.auth import authenticate, login
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login, update_session_auth_hash
 from django.contrib.auth.models import User
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.core.paginator import Paginator
 from django.http import HttpResponse, JsonResponse, Http404
 
@@ -89,10 +89,19 @@ def login_view(request):
 
 def userpage(request):
     """View rendering userpage"""
-    title = request.user
-    context = {'title':title}
+    context={'user':request.user}
+    success = False
     if request.user.is_authenticated:
-        context['user'] = request.user
+        form = PasswordChangeForm(user=request.user)
+        if request.method == 'POST':
+            form = PasswordChangeForm(user=request.user, data=request.POST)
+            if form.is_valid():
+                form.save()
+                update_session_auth_hash(request, form.user)
+                success = True
+        context['form'] = form
+        context['success'] = success
+        return render(request, 'foodSearch/userpage.html', context)
     return render(request, 'foodSearch/userpage.html', context)
 
 def new_name(request):
