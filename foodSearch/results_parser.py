@@ -22,7 +22,6 @@ class ResultsParser:
     """
 
     def __init__(self, product_id, current_user):
-        start_time = time.time()
         self.product = Product.objects.get(id=product_id)
         self.current_user = current_user
         self.all_results = self.products_same_categories()

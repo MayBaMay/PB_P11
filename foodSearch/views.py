@@ -4,14 +4,14 @@
 foodSearch views
 """
 
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.contrib.auth import authenticate, login, update_session_auth_hash
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.core.paginator import Paginator
 from django.http import HttpResponse, JsonResponse, Http404
 
-from .models import Category, Favorite, Product
+from .models import Favorite, Product
 from .query_parser import QueryParser
 from .results_parser import ResultsParser
 from .forms import UserCreationFormWithMail
@@ -74,7 +74,7 @@ def login_view(request):
             else:
                 response_data = {'user':"error-user-none"}
         else:
-            rusername = request.POST['username']
+            username = request.POST['username']
             password = request.POST['password']
             try:
                 user = User.objects.get(username=username)
@@ -89,7 +89,7 @@ def login_view(request):
 
 def userpage(request):
     """View rendering userpage"""
-    context={'user':request.user}
+    context = {'user':request.user}
     success = False
     if request.user.is_authenticated:
         form = PasswordChangeForm(user=request.user)
