@@ -27,6 +27,14 @@
         <a class="btn btn-secondary" href="javascript:history.go(-1)" role="button">Retour</a>
     </div>
 
+  {% else %}
+    <div class="container">
+      <b>
+        <p>Vous n'êtes connecté à aucun compte utilisatieur</p>
+        <a class="btn btn-secondary connection" data-toggle="modal" data-target="#modalLogIn">Se connecter</a>
+      </b>
+    </div>
+
   {% endif %}
 
 </section>
