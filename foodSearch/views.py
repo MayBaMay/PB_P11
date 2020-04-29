@@ -92,11 +92,27 @@ def userpage(request):
     title = request.user
     context = {'title':title}
     if request.user.is_authenticated:
-        username = request.user.username
-        email = request.user.email
-        context['username'] = username
-        context['email'] = email
+        context['user'] = request.user
     return render(request, 'foodSearch/userpage.html', context)
+
+def new_name(request):
+    """View changing user name"""
+    response_data = {}
+    user = request.user
+    if request.method == 'POST':
+        new_name_user = request.POST['username']
+        if User.objects.filter(username=new_name_user).exists():
+            response_data = {'response':"name already in db", 'name':user.username}
+        else:
+            user.username = new_name_user
+            user.save()
+            if user.username == new_name_user:
+                response_data = {'response':"success", 'name':user.username}
+            else:
+                response_data = {'response':"fail", 'name':user.username}
+    else:
+        raise Http404()
+    return HttpResponse(JsonResponse(response_data))
 
 def watchlist(request):
     """View rendering wachlist page with products saved as substitute by user"""

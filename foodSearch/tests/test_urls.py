@@ -1,8 +1,13 @@
 """urls.py tests"""
 from django.test import SimpleTestCase
 from django.urls import resolve, reverse
-from ..views import index, legals, register_view, login_view, search, results
-from ..views import userpage, watchlist, detail, load_favorite
+from ..views import (
+    index, legals,
+    register_view, login_view,
+    search, results, detail,
+    userpage, new_name,
+    watchlist, load_favorite,
+)
 
 class TestUrls(SimpleTestCase):
     """test on urls.py with SimpleTestCase class"""
@@ -56,3 +61,8 @@ class TestUrls(SimpleTestCase):
         """test load_favorite"""
         url = reverse('foodSearch:load_favorite')
         self.assertEqual(resolve(url).func, load_favorite)
+
+    def test_new_name_is_resolved(self):
+        """test new_name"""
+        url = reverse('foodSearch:new_name')
+        self.assertEqual(resolve(url).func, new_name)

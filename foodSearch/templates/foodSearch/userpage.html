@@ -14,12 +14,21 @@
 </header>
 
 <section style="background-color:#de9440;" class="page-section" id="history">
-  <div class="col-12 text-center">
-    <p>Adresse mail : <span style="background-color:white; color:black;">{{ email }}</span></p>
-  </div>
-  <div class="row justify-content-center mt-3">
-      <a class="btn btn-secondary" href="javascript:history.go(-1)" role="button">Retour</a>
-  </div>
+
+  {% if user.is_authenticated %}
+
+   <div class="container">
+     <b>
+     <p>Nom d'utilisateur : {{ user.username }} <a href="#" id="newName"title="Modfier" data-toggle="modal" data-target="#modal_change_username" ><i class="fas fa-edit"></i></a></p>
+     <p>Adresse mail : {{ user.email }}</p>
+     </b>
+   </div>
+    <div class="row justify-content-center mt-3">
+        <a class="btn btn-secondary" href="javascript:history.go(-1)" role="button">Retour</a>
+    </div>
+
+  {% endif %}
+  
 </section>
 
 {% endblock %}

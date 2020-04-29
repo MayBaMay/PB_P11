@@ -183,14 +183,52 @@ class ProceedResearchTestCase(TestCase):
         self.assertTemplateUsed(response, 'foodSearch/detail.html')
         self.assertEqual(response.context['product'], self.prod)
 
-    def test_userpage(self):
-        """test userpage view"""
-        self.client.login(username='Test', password='password')
+class UserProfileTestCase(TransactionTestCase):
+
+    def setUp(self):
+        """setup tests"""
+        self.user = User.objects.create_user(
+            username='Test', email='test@test.com', password='tetspassword')
+
+    def test_userpage_get(self):
+        """test userpage view in get method"""
+        self.client.login(username='Test', password='tetspassword')
         response = self.client.get(reverse('foodSearch:userpage'))
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(User.objects.get(username="Test").is_authenticated, True)
         self.assertTemplateUsed(response, 'foodSearch/userpage.html')
-        self.assertEqual(response.context['username'], self.user.username)
-        self.assertEqual(response.context['email'], self.user.email)
+        self.assertEqual(response.context['user'].username, self.user.username)
+        self.assertEqual(response.context['user'].email, self.user.email)
+        self.client.logout()
+
+    def test_new_name(self):
+        """test change nameview"""
+        id = self.user.id
+        username = self.user.username
+        self.client.login(username=self.user.username, password='tetspassword')
+        data = {'username':'NewName'}
+        response = self.client.post(reverse('foodSearch:new_name'),
+                                    data=data,
+                                    HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEquals(User.objects.filter(username="NewName").exists(), True)
+        self.assertEquals(User.objects.filter(username="NewName").count(), 1)
+        self.assertEquals(User.objects.get(id=id).username, 'NewName')
+        self.client.logout()
+
+    def test_new_name_already_in_DB(self):
+        """test change nameview with integrity error, name already in DB"""
+        User.objects.create_user(
+            username='userinDB', email='Test@…', password='password')
+        id = self.user.id
+        username = self.user.username
+        self.client.login(username=self.user.username, password='tetspassword')
+        data = {'username':'userinDB'}
+        response = self.client.post(reverse('foodSearch:new_name'),
+                                    data=data,
+                                    HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEquals(User.objects.get(id=id).username, username)
+        self.assertTrue(User.objects.get(username='userinDB').id != id)
+        self.client.logout()
 
 class ManageFavoritesTestCase(TransactionTestCase):
     """
