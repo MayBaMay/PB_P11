@@ -5,7 +5,7 @@ from ..views import (
     index, legals,
     register_view, login_view,
     search, results, detail,
-    userpage, new_name,
+    userpage, new_name, new_email,
     watchlist, load_favorite,
 )
 
@@ -66,3 +66,8 @@ class TestUrls(SimpleTestCase):
         """test new_name"""
         url = reverse('foodSearch:new_name')
         self.assertEqual(resolve(url).func, new_name)
+
+    def test_new_email_is_resolved(self):
+        """test new_email"""
+        url = reverse('foodSearch:new_email')
+        self.assertEqual(resolve(url).func, new_email)

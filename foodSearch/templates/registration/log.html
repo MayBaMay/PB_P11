@@ -163,3 +163,33 @@
   </div>
 </div>
 <!-- End of change_username-->
+
+<!--  change_email Form Modal -->
+<div id="modal_change_email" class="modal fade" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Changer mon adresse email</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <form id="NewEmailForm" method="post" action="{% url 'foodSearch:new_email' %}">
+          {% csrf_token %}
+          <div class="form-group">
+            <input type="email" name="email" id="new_email" class="form-control"
+             placeholder="Nouvelle adresse email" required="required" />
+          </div>
+          <div class="text-danger text-center dbemail-error" id="" style="display:none;">
+            <p>Un compte existe déjà avec cette adresse email</p>
+          </div>
+          <p class="text-danger text-center newemail-error" style="display:none;">Une erreur est survenue</p>
+          <button type="submit" class="btn btn-secondary mt-3">Valider</button>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- End of change_email-->

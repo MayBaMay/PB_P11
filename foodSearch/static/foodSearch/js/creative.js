@@ -203,6 +203,7 @@ $.ajaxSetup({
     let form = $(this);
     let submitBtn = $(this).find('input[type=submit]');
     $('.username-error').css('display', 'none');
+    $('.newname-error').css('display', 'none');
     e.preventDefault();
     $.ajax({
       url: "/new_name/", // the file to call
@@ -222,6 +223,35 @@ $.ajaxSetup({
         }
         else {
           $('.newname-error').css('display', 'block');
+          submitBtn.prop('disabled', false);
+        }
+      })
+  });
+
+  $('#NewEmailForm').submit(function(e){
+    let form = $(this);
+    let submitBtn = $(this).find('input[type=submit]');
+    $('.newemail-error').css('display', 'none');
+    $('.dbemail-error').css('display', 'none');
+    e.preventDefault();
+    $.ajax({
+      url: "/new_email/", // the file to call
+      type: "POST", // GET or POST
+      data: $(this).serialize(), // get the form data
+      })
+      .done(function(data) {
+        let new_name_response = jQuery.parseJSON(data);
+        // console.log(login_response);
+        if (new_name_response.response == "success"){
+          document.location.reload(true);
+          $('#modal_change_email').modal('hide');
+        }
+        else if (new_name_response.response == "email already in DB"){
+          $('.dbemail-error').css('display', 'block');
+          submitBtn.prop('disabled', false);
+        }
+        else {
+          $('.newemail-error').css('display', 'block');
           submitBtn.prop('disabled', false);
         }
       })

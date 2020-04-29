@@ -18,17 +18,17 @@
   {% if user.is_authenticated %}
 
    <div class="container">
-     <b>
-     <p>Nom d'utilisateur : {{ user.username }} <a href="#" id="newName"title="Modfier" data-toggle="modal" data-target="#modal_change_username" ><i class="fas fa-edit"></i></a></p>
-     <p>Adresse mail : {{ user.email }}</p>
-     </b>
+    <b>
+      <p>Nom d'utilisateur : {{ user.username }} <a href="#" id="newName"title="Modfier" data-toggle="modal" data-target="#modal_change_username" ><i class="fas fa-edit"></i></a></p>
+      <p>Adresse mail : {{ user.email }} <a href="#" id="newemail"title="Modfier" data-toggle="modal" data-target="#modal_change_email" ><i class="fas fa-edit"></i></a></p>
+    </b>
    </div>
     <div class="row justify-content-center mt-3">
         <a class="btn btn-secondary" href="javascript:history.go(-1)" role="button">Retour</a>
     </div>
 
   {% endif %}
-  
+
 </section>
 
 {% endblock %}

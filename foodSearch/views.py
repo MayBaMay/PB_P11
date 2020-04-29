@@ -114,6 +114,25 @@ def new_name(request):
         raise Http404()
     return HttpResponse(JsonResponse(response_data))
 
+def new_email(request):
+    """View changing user email"""
+    response_data = {}
+    user = request.user
+    if request.method == 'POST':
+        new_email_user = request.POST['email']
+        if User.objects.filter(email=new_email_user).exists():
+            response_data = {'response':"email already in DB"}
+        else:
+            user.email = new_email_user
+            user.save()
+            if user.email == new_email_user:
+                response_data = {'response':"success"}
+            else:
+                response_data = {'response':"fail"}
+    else:
+        raise Http404()
+    return HttpResponse(JsonResponse(response_data))
+
 def watchlist(request):
     """View rendering wachlist page with products saved as substitute by user"""
     current_user = request.user
