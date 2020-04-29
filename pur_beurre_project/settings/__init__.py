@@ -23,6 +23,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+EMAIL_BACKEND = os.getenv("EMAIL_BACKEND")
+
 try:
     IP = os.getenv("IP")
     if IP:

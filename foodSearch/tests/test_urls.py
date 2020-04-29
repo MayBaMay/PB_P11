@@ -1,6 +1,7 @@
 """urls.py tests"""
 from django.test import SimpleTestCase
 from django.urls import resolve, reverse
+from django.contrib.auth import views as auth_views
 from ..views import (
     index, legals,
     register_view, login_view,
@@ -71,3 +72,26 @@ class TestUrls(SimpleTestCase):
         """test new_email"""
         url = reverse('foodSearch:new_email')
         self.assertEqual(resolve(url).func, new_email)
+
+    def test_password_reset_is_resolved(self):
+        """test password_reset"""
+        url = reverse('foodSearch:password_reset')
+        view = resolve(url)
+        self.assertEqual(view.func.view_class, auth_views.PasswordResetView)
+
+    def test_password_reset_done_is_resolved(self):
+        """test password_reset_done"""
+        url = reverse('foodSearch:password_reset_done')
+        view = resolve(url)
+        self.assertEqual(view.func.view_class, auth_views.PasswordResetDoneView)
+
+    def test_password_reset_confirm_is_resolved(self):
+        """test password_reset_confirm"""
+        view = resolve('/reset/{uidb64}/{token}/')
+        self.assertEqual(view.func.view_class, auth_views.PasswordResetConfirmView)
+
+    def test_password_reset_complete_is_resolved(self):
+        """test password_reset_complete"""
+        url = reverse('foodSearch:password_reset_complete')
+        view = resolve(url)
+        self.assertEqual(view.func.view_class, auth_views.PasswordResetCompleteView)

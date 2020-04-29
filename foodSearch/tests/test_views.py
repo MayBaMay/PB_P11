@@ -5,7 +5,10 @@ from django.test import TestCase
 from django.urls import reverse
 from django.test import TransactionTestCase
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+from django.contrib.auth import get_user_model
 from  django.contrib.auth.models import User
+from django.core import mail
+
 from selenium.webdriver.firefox.webdriver import WebDriver
 
 from ..models import Favorite, Product
@@ -104,57 +107,102 @@ class RegisterClientTestCase(TransactionTestCase):
             'registerTestUser', 'test@test.com', 'testpassword')
 
     def test_register_succes(self):
+        """Test client register with success"""
         data = {'username':'NewUserTest',
                 'email':'testnewUser@test.com',
                 'password1':'t3stpassword',
                 'password2':'t3stpassword'}
-        response = self.client.post(reverse('foodSearch:register'),
-                                    data=data,
-                                    HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.client.post(reverse('foodSearch:register'),
+                         data=data,
+                         HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         self.assertEqual(User.objects.filter(username='NewUserTest').exists(), True)
         self.assertEqual(User.objects.get(username='NewUserTest').is_authenticated, True)
         self.client.logout()
 
     def test_register_fails_password_not_confrimed(self):
+        """Test client register fails cause password is not confirmed"""
         data = {'username':'NewUserTest',
                 'email':'testnewUser@test.com',
                 'password1':'t3stpassword',
                 'password2':'testpassword'}
-        response = self.client.post(reverse('foodSearch:register'),
-                                    data=data,
-                                    HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.client.post(reverse('foodSearch:register'),
+                         data=data,
+                         HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         self.assertEqual(User.objects.filter(username='NewUserTest').exists(), False)
 
     def test_register_fails_password_too_short(self):
+        """Test client register fails cause password is too short"""
         data = {'username':'NewUserTest',
                 'email':'testnewUser@test.com',
                 'password1':'test',
                 'password2':'test'}
-        response = self.client.post(reverse('foodSearch:register'),
-                                    data=data,
-                                    HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.client.post(reverse('foodSearch:register'),
+                         data=data,
+                         HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         self.assertEqual(User.objects.filter(username='NewUserTest').exists(), False)
 
-    def test_register_fails_username_already_in_DB(self):
+    def test_register_fails_username_already_in_db(self):
+        """Test client register fails cause username is already in DB"""
         data = {'username':'registerTestUser',
                 'email':'registerTestUser@test.com',
                 'password1':'t3stpassword',
                 'password2':'t3stpassword'}
-        response = self.client.post(reverse('foodSearch:register'),
-                                    data=data,
-                                    HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.client.post(reverse('foodSearch:register'),
+                         data=data,
+                         HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         self.assertEqual(User.objects.filter(username='registerTestUser').exists(), True)
         self.assertEqual(User.objects.filter(email='registerTestUser@test.com').exists(), False)
 
-    def test_register_fails_email_already_in_DB(self):
+    def test_register_fails_email_already_in_db(self):
+        """Test client register fails cause email is already in DB"""
         data = {'username':'brandnewuser',
                 'email':'test@test.com',
                 'password1':'t3stpassword',
                 'password2':'t3stpassword'}
-        response = self.client.post(reverse('foodSearch:register'),
-                                    data=data,
-                                    HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.client.post(reverse('foodSearch:register'),
+                         data=data,
+                         HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         self.assertEqual(User.objects.filter(username='brandnewuser').exists(), False)
+
+    def test_reset_password(self):
+        """test reset password view in get method"""
+
+        # get password_reset
+        response = self.client.get(reverse('foodSearch:password_reset'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'registration/password_reset_form.html')
+
+        # post password_reset wrong email
+        response = self.client.post('/password_reset/', {'email': 'not_a_real_email@email.com'})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(len(mail.outbox), 0)
+
+        # post password_reset email found
+        response = self.client.post(reverse('password_reset'), {'email': 'test@test.com'})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn("http://", mail.outbox[0].body)
+        self.assertEqual(mail.outbox[0].subject, 'Pur Beurre réinitialisation du mot de passe')
+        # test redirect to password_reset_done
+        self.assertRedirects(response, '/accounts/password_reset/done/')
+
+        # get password_reset_confirm
+        uid = response.context[0]['uid']
+        url = mail.outbox[0].body.split('http://testserver')[1].split('\n', 1)[0]
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, '/accounts/reset/'+uid+'/set-password/')
+
+        # post valid password_reset_confirm
+        data = {'new_password1': 'newpasswordforTest',
+                'new_password2': 'newpasswordforTest'}
+        response = self.client.post('/accounts/reset/'+uid+'/set-password/', data=data)
+        self.assertEqual(response.status_code, 302)
+        # test redirect to password_reset_complete
+        self.assertRedirects(response, '/accounts/reset/done/')
+
+        self.assertTrue(
+            get_user_model()._default_manager.get().check_password('newpasswordforTest'))
 
 
 class ProceedResearchTestCase(TestCase):
@@ -204,6 +252,7 @@ class ProceedResearchTestCase(TestCase):
         self.assertEqual(response.context['product'], self.prod)
 
 class UserProfileTestCase(TransactionTestCase):
+    """Tests on views and features related with user profile"""
 
     def setUp(self):
         """setup tests"""
@@ -223,57 +272,55 @@ class UserProfileTestCase(TransactionTestCase):
 
     def test_new_name(self):
         """test change nameview"""
-        id = self.user.id
-        username = self.user.username
+        user_id = self.user.id
         self.client.login(username=self.user.username, password='testpassword')
         data = {'username':'NewName'}
-        response = self.client.post(reverse('foodSearch:new_name'),
-                                    data=data,
-                                    HTTP_X_REQUESTED_WITH='XMLHttpRequest')
-        self.assertEquals(User.objects.filter(username="NewName").exists(), True)
-        self.assertEquals(User.objects.filter(username="NewName").count(), 1)
-        self.assertEquals(User.objects.get(id=id).username, 'NewName')
+        self.client.post(reverse('foodSearch:new_name'),
+                         data=data,
+                         HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(User.objects.filter(username="NewName").exists(), True)
+        self.assertEqual(User.objects.filter(username="NewName").count(), 1)
+        self.assertEqual(User.objects.get(id=user_id).username, 'NewName')
         self.client.logout()
 
-    def test_new_name_already_in_DB(self):
+    def test_new_name_already_in_db(self):
         """test change nameview with integrity error, name already in DB"""
         User.objects.create_user(
             username='userinDB', email='Test@…', password='password')
-        id = self.user.id
+        user_id = self.user.id
         username = self.user.username
         self.client.login(username=self.user.username, password='testpassword')
         data = {'username':'userinDB'}
-        response = self.client.post(reverse('foodSearch:new_name'),
-                                    data=data,
-                                    HTTP_X_REQUESTED_WITH='XMLHttpRequest')
-        self.assertEquals(User.objects.get(id=id).username, username)
-        self.assertTrue(User.objects.get(username='userinDB').id != id)
+        self.client.post(reverse('foodSearch:new_name'),
+                         data=data,
+                         HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(User.objects.get(id=user_id).username, username)
+        self.assertTrue(User.objects.get(username='userinDB').id != user_id)
         self.client.logout()
 
     def test_new_email(self):
         """test change nameview"""
-        id = self.user.id
-        username = self.user.username
+        user_id = self.user.id
         self.client.login(username=self.user.username, password='testpassword')
         data = {'email':'New@email.test'}
-        response = self.client.post(reverse('foodSearch:new_email'),
-                                    data=data,
-                                    HTTP_X_REQUESTED_WITH='XMLHttpRequest')
-        self.assertEquals(User.objects.get(id=id).email, 'New@email.test')
+        self.client.post(reverse('foodSearch:new_email'),
+                         data=data,
+                         HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(User.objects.get(id=user_id).email, 'New@email.test')
         self.client.logout()
 
-    def test_new_email_already_in_DB(self):
+    def test_new_email_already_in_db(self):
         """test change nameview with integrity error, name already in DB"""
         User.objects.create_user(
             username='userinDB', email='emailalreadyindb@test.com', password='password')
-        id = self.user.id
+        user_id = self.user.id
         email = self.user.email
         self.client.login(username=self.user.username, password='testpassword')
         data = {'email':'emailalreadyindb@test.com'}
-        response = self.client.post(reverse('foodSearch:new_email'),
-                                    data=data,
-                                    HTTP_X_REQUESTED_WITH='XMLHttpRequest')
-        self.assertEquals(User.objects.get(id=id).email, email)
+        self.client.post(reverse('foodSearch:new_email'),
+                         data=data,
+                         HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(User.objects.get(id=user_id).email, email)
         self.client.logout()
 
     def test_userpage_post_change_password_succes(self):
@@ -284,8 +331,8 @@ class UserProfileTestCase(TransactionTestCase):
             'new_password1': 'mynewpassword',
             'new_password2': 'mynewpassword',
         }
-        response = self.client.post(reverse('foodSearch:userpage'), data)
-        self.assertEquals(User.objects.get(username="Test").check_password("mynewpassword"), True)
+        self.client.post(reverse('foodSearch:userpage'), data)
+        self.assertEqual(User.objects.get(username="Test").check_password("mynewpassword"), True)
         self.client.logout()
 
     def test_userpage_post_change_password_fail_no_confirmed(self):
@@ -296,9 +343,9 @@ class UserProfileTestCase(TransactionTestCase):
             'new_password1': 'mynewpassword',
             'new_password2': 'newpassword',
             }
-        response = self.client.post(reverse('foodSearch:userpage'), data)
-        self.assertEquals(User.objects.get(username="Test").check_password("mynewpassword"), False)
-        self.assertEquals(User.objects.get(username="Test").check_password("testpassword"), True)
+        self.client.post(reverse('foodSearch:userpage'), data)
+        self.assertEqual(User.objects.get(username="Test").check_password("mynewpassword"), False)
+        self.assertEqual(User.objects.get(username="Test").check_password("testpassword"), True)
         self.client.logout()
 
     def test_userpage_post_change_password_fail_too_short(self):
@@ -309,9 +356,9 @@ class UserProfileTestCase(TransactionTestCase):
             'new_password1': 'secret',
             'new_password2': 'secret',
             }
-        response = self.client.post(reverse('foodSearch:userpage'), data)
-        self.assertEquals(User.objects.get(username="Test").check_password("secret"), False)
-        self.assertEquals(User.objects.get(username="Test").check_password("testpassword"), True)
+        self.client.post(reverse('foodSearch:userpage'), data)
+        self.assertEqual(User.objects.get(username="Test").check_password("secret"), False)
+        self.assertEqual(User.objects.get(username="Test").check_password("testpassword"), True)
         self.client.logout()
 
 
