@@ -90,6 +90,7 @@ $.ajaxSetup({
     // hide other modals
     $('#modalNotConnected').modal('hide');
     $('#modalRegister').modal('hide');
+    $('#modal_change_username').modal('hide');
     // reset modalLogIn
     let loginform = $('#loginform').attr('id');
     document.getElementById(loginform).reset();
