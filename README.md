@@ -1,5 +1,5 @@
 # PUR BEURRE - OPENCLASSROOMS PYTHON - PROJECT #11
-This open source project was created for the OpenClassRooms' Python developer course (Project 8/13)).
+This open source project was created for the OpenClassRooms' Python developer course (Project 11/13)).
 It is a DJANGO application integrating a back-end part based on Python 3.7 and a front-end part developed with HTML5, CSS3 and JavaScript using Bootsrap.
 
 Ask the application a product name, select one of the products to confirm your choice and it will give you a list of similar products with a better nutriscore.
