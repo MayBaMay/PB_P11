@@ -18,7 +18,7 @@ This project was conceived with postgresql, but we can use an other db engine.
 
 #### STEP 2: Create your virtualenv
 (on mac and linux)<br/>
-`cd PB_P8`<br/>
+`cd PB_P11`<br/>
 `virtualenv env -p python3`<br/>
 `source env/bin/activate`<br/>
 `pip install -r requirements.txt`<br/>
